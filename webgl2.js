@@ -154,10 +154,11 @@ class WebGL2Renderer {
         let gl = this.gl;
         let program = this.program;
 
-        gl.useProgram(program);
-        let location = gl.getAttribLocation(program, attrib);
         let vao = gl.createVertexArray();
         gl.bindVertexArray(vao);
+
+        gl.useProgram(program);
+        let location = gl.getAttribLocation(program, attrib);
         gl.vertexAttribPointer(location, itemSize, _gl_type_map_[type], false, stride, offset)
         gl.enableVertexAttribArray(location);
         return vao;
