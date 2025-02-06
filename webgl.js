@@ -117,7 +117,7 @@ class WebGLRenderer {
         return this.createProgramFromSource(vertexSource, fragmentSource);
     }
 
-    /*
+    /**
      * 绑定数据@data到WebGL缓存，创建一个vbo对象
      *
      * @param data 缓存数据
@@ -133,6 +133,16 @@ class WebGLRenderer {
         gl.bindBuffer(gl.ARRAY_BUFFER, vBuffer);
         gl.bufferData(gl.ARRAY_BUFFER, data, gl.DYNAMIC_DRAW);
         return vBuffer;
+    }
+
+    /**
+     * 启用一个 ARRAY_BUFFER 对象
+     * 
+     * @param {WebGLRenderingContext.WebGLBuffer} vbo 顶点缓存对象
+     */
+    useArrayBuffer(vbo) {
+        let gl = this.gl;
+        gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
     }
 
     /**
