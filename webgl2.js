@@ -153,11 +153,11 @@ class WebGL2Renderer {
     activateAttribute(attrib, itemSize, type, stride = 0, offset = 0) {
         let gl = this.gl;
         let program = this.program;
+        gl.useProgram(program);
 
         let vao = gl.createVertexArray();
         gl.bindVertexArray(vao);
 
-        gl.useProgram(program);
         let location = gl.getAttribLocation(program, attrib);
         gl.vertexAttribPointer(location, itemSize, _gl_type_map_[type], false, stride, offset)
         gl.enableVertexAttribArray(location);
@@ -185,7 +185,7 @@ class WebGL2Renderer {
 
         gl.useProgram(program);
         gl.bindVertexArray(vao);
-        gl.drawArrays(gl.TRIANGLES, offset, count);
+        gl.drawArrays(type, offset, count);
     }
 }
 
