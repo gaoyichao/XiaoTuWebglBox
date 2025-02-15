@@ -179,6 +179,16 @@ class WebGL2Renderer {
         gl.uniform4fv(offsetLoc, value);
     }
 
+    uniformMatrix4fv(name, value)
+    {
+        let gl = this.gl;
+        let program = this.program;
+        gl.useProgram(program);
+
+        let offsetLoc = gl.getUniformLocation(program, name);
+        gl.uniformMatrix4fv(offsetLoc, false, value);
+    }
+
     drawArrays(vao, type, count = 3, offset = 0) {
         let gl = this.gl;
         let program = this.program;
