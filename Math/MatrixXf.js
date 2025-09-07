@@ -2,17 +2,28 @@
 class MatrixXf {
 
     /**
-     * 一个m行n列的Float32矩阵,初始为单位矩阵
+     * 一个m行n列的Float32矩阵,初始为单位矩阵,列排列
      * @param {int} m 矩阵行数 
      * @param {int} n 矩阵列数
      */
-	constructor(m, n) {
+	constructor(m, n)
+    {
         this.elements = new Float32Array(m * n);
         this.ncols = n;
         this.nrows = m;
         this.isRowOrder = false;
 
         this.identity();
+    }
+
+    /**
+     * 返回矩阵中第 i 行，j 列的元素索引
+     * @param {int} i 
+     * @param {int} j 
+     */
+    idx(i, j)
+    {
+        return i + j * this.nrows;
     }
 
     /**
@@ -26,10 +37,7 @@ class MatrixXf {
     identity() {
         for (var i = 0; i < this.nrows; i++) {
             for (var j = 0; j < this.ncols; j++) {
-                if (this.isRowOrder)
-                    this.elements[i * this.ncols + j] = (i == j) ? 1 : 0;
-                else
-                    this.elements[i + j * this.nrows] = (i == j) ? 1 : 0;
+                this.elements[this.idx(i, j)] = (i == j) ? 1 : 0;
             }
         }
 
@@ -67,11 +75,25 @@ class MatrixXf {
      * @returns 对象本身
      */
     setElementAt(v, i, j) {
-        if (this.isRowOrder)
-            this.elements[i*this.ncols + j] = v;
-        else
-            this.elements[i + j*this.nrows] = v;
+        this.elements[this.idx(i, j)] = v;
         return this;
+    }
+
+    /**
+     * 以矩阵的形式打印
+     */
+    printMatrix() {
+        let str = "";
+        for (let i = 0; i < this.nrows; i++) {
+            let rowStr = '';
+            for (let j = 0; j < this.ncols; j++) {
+                // 计算当前元素在数组中的索引
+                let index = i + j * this.nrows;
+                rowStr += this.elements[index] + '\t'; 
+            }
+            str  += rowStr + "\n";
+        }
+        console.log(str);
     }
 }
 
