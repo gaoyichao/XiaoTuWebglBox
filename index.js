@@ -1,2 +1,4 @@
 export * from './WebGL/index.js'
-export * from './Math/index.js'
+
+import * as Math from './Math/index.js'
+export { Math }

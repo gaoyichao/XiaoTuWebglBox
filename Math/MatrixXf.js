@@ -1,29 +1,65 @@
 
-class MatrixXf {
+import { DataTypeId } from './Constants.js'
 
-    /**
-     * 一个m行n列的Float32矩阵,初始为单位矩阵,列排列
-     * @param {int} m 矩阵行数 
-     * @param {int} n 矩阵列数
-     */
-	constructor(m, n)
+/**
+ * 通用类型的矩阵, 按列排列
+ */
+class Matrix {
+    constructor()
     {
-        this.elements = new Float32Array(m * n);
-        this.ncols = n;
-        this.nrows = m;
-        this.isRowOrder = false;
-
-        this.identity();
+        this.elements = [];
+        this.ncols = 0;
+        this.nrows = 0;
     }
 
     /**
-     * 返回矩阵中第 i 行，j 列的元素索引
-     * @param {int} i 
-     * @param {int} j 
+     * 
+     * @returns 元素数量
+     */
+    num_elements()
+    {
+        let num = this.ncols * this.nrows;
+        if (num != this.elements.length)
+            throw RangeError(`${num} != ${this.elements.length}`);
+        return num;
+    }
+
+    /**
+     * 返回矩阵中第 i 行j 列的元素索引
+     * @param {int} i 行索引
+     * @param {int} j 列索引
+     * @returns 元素索引
      */
     idx(i, j)
     {
+        if (i >= this.nrows)
+            throw RangeError(`行数越界 ${i}:${this.ncols}`);
+        if (j >= this.ncols)
+            throw RangeError(`列数越界 ${j}:${this.ncols}`);
         return i + j * this.nrows;
+    }
+
+    /**
+     * 返回矩阵中第 i 行 j 列的元素
+     * @param {int} i 行索引
+     * @param {int} j 列索引
+     * @returns 元素
+     */
+    get(i, j)
+    {
+        return this.elements[this.idx(i, j)];
+    }
+
+    /**
+     * 设置第 i 行第 j 列的元素值为v
+     * @param {int} i 行索引
+     * @param {int} j 列索引
+     * @param {number} v 值
+     * @returns 对象本身
+     */
+    set(i, j, v) {
+        this.elements[this.idx(i, j)] = v;
+        return this;
     }
 
     /**
@@ -68,18 +104,6 @@ class MatrixXf {
     }
 
     /**
-     * 设置第i行第j列的元素值为v
-     * @param {float} v 目标值
-     * @param {int} i 行索引
-     * @param {int} j 列索引
-     * @returns 对象本身
-     */
-    setElementAt(v, i, j) {
-        this.elements[this.idx(i, j)] = v;
-        return this;
-    }
-
-    /**
      * 以矩阵的形式打印
      */
     printMatrix() {
@@ -97,5 +121,57 @@ class MatrixXf {
     }
 }
 
-export { MatrixXf };
+/**
+ * 一个 4x4 的矩阵,初始为单位矩阵,列排列
+ * 
+ * 目前只支持浮点数, float, double
+ */
+class Matrix4 extends Matrix {
+    constructor(typeid = DataTypeId.FLOAT)
+    {
+        super();
+
+        switch(typeid) {
+            case DataTypeId.FLOAT: {
+                this.elements = new Float32Array(16);
+                break;
+            }
+            case DataTypeId.DOUBLE: {
+                this.elements = new Float64Array(16);
+                break;
+            }
+            default: {
+                throw TypeError("不支持的数据类型");
+                break;
+            }
+        }
+
+        this.typeid = typeid;
+        this.ncols = 4;
+        this.nrows = 4;
+
+        this.identity();
+    }
+
+    /**
+     * 设置平移量
+     * 
+     * @param {number} x 平移向量 x 分量
+     * @param {number} y 平移向量 y 分量
+     * @param {number} z 平移向量 z 分量
+     * @param {number} k 补充齐次 k
+     * @returns 矩阵本身
+     */
+	setPosition( x, y, z, k = 1)
+    {
+        this.set(0, 3, x);
+        this.set(1, 3, y);
+        this.set(2, 3, z);
+        this.set(3, 3, k);
+		return this;
+	}
+
+}
+
+export { Matrix4 };
 
