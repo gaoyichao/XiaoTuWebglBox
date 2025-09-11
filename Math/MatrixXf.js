@@ -1,12 +1,15 @@
 
 import { DataTypeId } from './Constants.js'
 
-/**
- * 通用类型的矩阵, 按列排列
- */
 class Matrix {
+
+    /**
+     * 稠密矩阵的基类, 按列排列
+     */
     constructor()
     {
+        Matrix.prototype.isMatrix = true;
+
         this.elements = [];
         this.ncols = 0;
         this.nrows = 0;
@@ -121,12 +124,14 @@ class Matrix {
     }
 }
 
-/**
- * 一个 4x4 的矩阵,初始为单位矩阵,列排列
- * 
- * 目前只支持浮点数, float, double
- */
 class Matrix4 extends Matrix {
+
+    /**
+     * 一个 4x4 的矩阵,初始为单位矩阵,列排列
+     * 目前只支持浮点数, float, double
+     * 
+     * @param {enum} typeid 存储元素的类型 ID
+     */
     constructor(typeid = DataTypeId.FLOAT)
     {
         super();
@@ -154,15 +159,30 @@ class Matrix4 extends Matrix {
     }
 
     /**
+     * 构造仅平移的矩阵
+     * @param {number} x 平移向量 x 分量
+     * @param {number} y 平移向量 y 分量
+     * @param {number} z 平移向量 z 分量
+     * @param {enum} typeid 存储元素的类型 ID
+     * @returns 仅平移的矩阵
+     */
+    static CreateTranslation(x, y, z, typeid = DataTypeId.FLOAT)
+    {
+        let re = new Matrix4(typeid);
+        re.setPosition(x, y, z, 1);
+        return re;
+    }
+
+    /**
      * 设置平移量
      * 
      * @param {number} x 平移向量 x 分量
      * @param {number} y 平移向量 y 分量
      * @param {number} z 平移向量 z 分量
-     * @param {number} k 补充齐次 k
+     * @param {number} k 补充齐次 k, 默认为 1
      * @returns 矩阵本身
      */
-	setPosition( x, y, z, k = 1)
+	setPosition(x, y, z, k = 1)
     {
         this.set(0, 3, x);
         this.set(1, 3, y);
@@ -170,7 +190,6 @@ class Matrix4 extends Matrix {
         this.set(3, 3, k);
 		return this;
 	}
-
 }
 
 export { Matrix4 };

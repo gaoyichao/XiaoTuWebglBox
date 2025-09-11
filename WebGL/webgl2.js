@@ -4,19 +4,28 @@
  */
 
 import { Utils } from './Utils.js'
+import { Attribute, Object3D } from './Object3D.js'
 
 var _gl_type_map_ = {
     "float": WebGL2RenderingContext.FLOAT,
     "array_buffer": WebGL2RenderingContext.ARRAY_BUFFER
 };
 
-
 /**
  * WebGL2 渲染器
  */
 class WebGL2Renderer {
+    /**
+     * 网页中的 canvas 对象
+     */
     domElement = null;
+    /**
+     * WebGL 渲染上下文
+     */
     gl = null;
+    /**
+     * GPU 中的渲染程序
+     */
     program = null;
 
     /**
@@ -37,16 +46,23 @@ class WebGL2Renderer {
         this.gl = gl;
         this.setSize(width, height);
 
+
         gl.clearColor(0.0, 0.0, 0.0, 1.0);
         gl.clear(gl.COLOR_BUFFER_BIT);
     }
 
+    /**
+     * 画布宽度
+     */
     width()  { return this.domElement.width; }
+    /**
+     * 画布高度
+     */
     height() { return this.domElement.height; }
     /**
      * 设定画布大小
-     * @param {int} width 
-     * @param {int} height 
+     * @param {int} width 画布宽度
+     * @param {int} height 画布高度
      */
     setSize(width, height) {
         let canvas = this.domElement;
@@ -121,6 +137,9 @@ class WebGL2Renderer {
     createProgramFromUrl(vshader, fshader) {
         let vertexSource = Utils.loadShaderSource(vshader);
         let fragmentSource = Utils.loadShaderSource(fshader);
+
+        console.log(vertexSource);
+        console.log(fragmentSource);
         return this.createProgramFromSource(vertexSource, fragmentSource);
     }
     /*
@@ -165,6 +184,32 @@ class WebGL2Renderer {
     }
 
     /**
+     * 获取 shader 中所有 attribute 变量
+     */
+    getAllAtributes()
+    {
+        let gl = this.gl;
+        let program = this.program;
+
+        let num = gl.getProgramParameter(program, gl.ACTIVE_ATTRIBUTES);
+        let attr = {};
+
+        for (let i = 0; i < num; i++) {
+            let info = gl.getActiveAttrib(program, i);
+            if (!info)
+                continue;
+            let location = gl.getAttribLocation(program, info.name);
+            attr[info.name] = {
+                idx: i,
+                info: info,
+                location: location
+            };
+        }
+        return attr;
+    }
+
+
+    /**
      * 设置 uniform 变量
      * @param {string} name 变量名称 
      * @param {list} value 变量值
@@ -179,6 +224,11 @@ class WebGL2Renderer {
         gl.uniform4fv(offsetLoc, value);
     }
 
+    /**
+     * 设置 uniform 矩阵
+     * @param {string} name 变量名称
+     * @param {Float32Array} value 按列存储的 4x4 的矩阵
+     */
     uniformMatrix4fv(name, value)
     {
         let gl = this.gl;
@@ -197,6 +247,50 @@ class WebGL2Renderer {
         gl.bindVertexArray(vao);
         gl.drawArrays(type, offset, count);
     }
+
+
+    /**
+     * 渲染一个 3D 模型
+     * @param {Object3D} obj 3D 模型对象
+     */
+    drawObject3D(obj)
+    {
+        if (null === obj.render)
+            obj.render = this;
+
+        if (obj.render !== this)
+            throw ReferenceError("渲染器错误!!!");
+
+        if (!'pos' in obj.attributes) {
+            throw RangeError(`${obj.name}:${obj.id} 不存在 pos 属性`);
+        }
+
+        if (null == obj.vao) {
+            obj.vao = this.gl.createVertexArray();
+            this.gl.bindVertexArray(obj.vao);
+
+            for (const attr_name in obj.attributes) {
+                let attr = obj.attributes[attr_name];
+                
+                if (null == attr.vbo) {
+                    attr.vbo = this.bindArrayBuffer(attr.array);
+                }
+
+                if (null == attr.vbo)
+                    throw ReferenceError(`渲染器错误! 未构造 ${obj.name}:${obj.id} 的 vao/vbo 对象`);
+
+                let location = this.gl.getAttribLocation(this.program, attr_name);
+                this.gl.vertexAttribPointer(location, attr.item_size, _gl_type_map_[attr.type], false, 0, 0);
+                this.gl.enableVertexAttribArray(location);
+            }
+        }
+
+        this.gl.bindVertexArray(obj.vao);
+        this.gl.drawArrays(this.gl.TRIANGLES, 0, obj.attributes.pos.count);
+    }
+
+
+
 }
 
 

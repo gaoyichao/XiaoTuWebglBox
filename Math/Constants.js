@@ -20,7 +20,7 @@ class DataTypeEnum {
     }
 }
 
-const DataTypeId = new DataTypeEnum();
+const DataTypeId = Object.freeze(new DataTypeEnum());
 export { DataTypeId };
 
 
